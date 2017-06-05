@@ -4,7 +4,7 @@ var Spotify = require('node-spotify-api');
 const request = require('request');
 var keys = require("./keys.js");
 
-//create Spotify client
+//create Spotify client once instead of everytime function is run
 var spotify = new Spotify({
   id: '36cae8a8af4d4c28a77506ada4b922b9',
   secret: 'fc6107839b0f424ab864c9731a2fadae'
@@ -94,11 +94,13 @@ function fetchOMDB (movie) {
   		console.log('*Rotten Tomatoes: ' + movieInfo.Ratings[0].Value);
   	});
 }
+
 //function to do-what-it-says
 function doWhatItSays (input) {
 
 }
 
+//For entering extra arguments
 function extraParameters() {
 	var enteredText = '';
 	for(var i=3; i<process.argv.length; i++) {
