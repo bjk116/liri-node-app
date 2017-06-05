@@ -40,10 +40,39 @@ function fetchTweets (twitterHandle) {
 function fetchSpotify (song) {
 	console.log('Requesting for ' + song);
 	spotify.search({ type: 'track', query: song }, function(err, data) {
+		
 		if (err) {
-			return console.log('Error occurred: ' + err);
+			if(err = TypeError)
+			return console.log('Song Not Found');
 		}
-		console.log(data.tracks.items[0].album); 
+
+		// console.log(data.tracks.items[0]);
+		// console.log(data.tracks.items[0].name);
+		//temp variables to see if subsequent results are equal, and breaking if they are
+		var tempArtist, tempAlbum;
+		for (var i = 0; i < data.tracks.items.length; i++) {
+			// since we definitely will have at least one result (assuming no error)
+			if ( i > 0 ) {
+				tempArtist = data.tracks.items[i-1].album.artists[0].name;
+				tempAlbum = data.tracks.items[i-1].album.name;
+			}
+
+			if ( i > 0 ) {
+				//if current results artist/album is same as last, then..
+				if (tempArtist == data.tracks.items[i].album.artists[0].name && tempAlbum == data.tracks.items[i].album.name)
+					//lets break loop, no need to continue
+					break;
+			}
+
+			console.log('Result ' + (i+1) + ':');
+			console.log('===============================================');
+			console.log('Song: ' + data.tracks.items[i].name);
+			console.log('Artist Name: ' + data.tracks.items[i].album.artists[0].name);
+			console.log('Preview URL: ' + data.tracks.items[i].preview_url);
+			console.log('Album: ' + data.tracks.items[i].album.name);
+			console.log('===============================================');
+		}
+
 	});
 }
 
