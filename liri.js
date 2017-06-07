@@ -2,7 +2,8 @@
 const Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 const request = require('request');
-var keys = require("./keys.js");
+var keys = require('./keys.js');
+var fs = require('fs');
 
 //create Spotify client once instead of everytime function is run
 var spotify = new Spotify({
@@ -96,8 +97,14 @@ function fetchOMDB (movie) {
 }
 
 //function to do-what-it-says
-function doWhatItSays (input) {
-
+function doWhatItSays () {
+	fs.readFile('random.txt','utf8', (err, data) => {
+		if (err) {
+			console.log(err);
+		}
+		var instructions = data.split(',');
+		selectingOption(instructions[0], instructions[1]);
+	});
 }
 
 //For entering extra arguments
@@ -109,35 +116,39 @@ function extraParameters() {
 	return enteredText;
 }
 
+function selectingOption(choice, extra) {
+	switch (choice) {
+		case 'my-tweets':
+			console.log('Fetching tweets for test Twitter Account');	
+			//US Senator used as an example case
+			fetchTweets('CoryBooker');
+			break;
+		case 'spotify-this-song':
+			console.log('Spotifying for ' + extra);
+			fetchSpotify(extra);
+			break;
+		case 'movie-this':
+			console.log('Searching OMDB for ' + extra);
+			fetchOMDB(extra);
+			break;
+		case 'do-what-it-says':
+			console.log('Doing what it says');
+			doWhatItSays();
+			break;
+		case 'find-tweets':
+			//use twitter handle without @
+			console.log('Fetching tweets for ' + extra);
+			fetchTweets(extra);
+			break;
+		default:
+			console.log('Please select a valid option');
+			break;
+	}
+}
+
 //Idea: Use inpuquire for input getting
 //deciding which function to run
 var choice = process.argv[2];
 var extraParameters = extraParameters();
 
-switch (choice) {
-	case 'my-tweets':
-		console.log('Fetching tweets for test Twitter Account');	
-		//US Senator used as an example case
-		fetchTweets('CoryBooker');
-		break;
-	case 'spotify-this-song':
-		console.log('Spotifying for ' + extraParameters);
-		fetchSpotify(extraParameters);
-		break;
-	case 'movie-this':
-		console.log('Searching OMDB for ' + extraParameters);
-		fetchOMDB(extraParameters);
-		break;
-	case 'do-what-it-says':
-		console.log('Doing what it says');
-		doWhatItSays(extraParameters);
-		break;
-	case 'find-tweets':
-		//use twitter handle without @
-		console.log('Fetching tweets for ' + extraParameters);
-		fetchTweets(extraParameters);
-		break;
-	default:
-		console.log('Please select a valid option');
-		break;
-}
+selectingOption(choice, extraParameters);
