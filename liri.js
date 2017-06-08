@@ -19,6 +19,12 @@ var client = new Twitter({
   access_token_secret: keys.twitterKeys.access_token_secret
 });
 
+function logAction (text) {
+	fs.appendFile('log.txt', text, function (err) {
+		if (err) throw err;
+	});
+}
+
 //function to run my-tweets
 function fetchTweets (twitterHandle) {
 	var params = {screen_name: twitterHandle};
@@ -26,12 +32,16 @@ function fetchTweets (twitterHandle) {
 		if (!error) {
 			console.log('There are tweets!');
     		var tweets_raw_data = tweets;
+    		//variable to send to log.txt
+    		var tweet_Display='';
     		// console.log(tweets_raw_data[0].user);
     		for(var i = 0; i < tweets_raw_data.length; i++) {
-    			console.log('=============================Tweet #' + (i+1) +'===========================');
-    			console.log(tweets_raw_data[i].created_at);
-    			console.log('@' + tweets_raw_data[i].user.screen_name);
-    			console.log(tweets_raw_data[i].text);
+    			tweet_Display = '=============================Tweet #' + (i+1) +'===========================\n' +
+    					tweets_raw_data[i].created_at + '\n' +
+    					'@' + tweets_raw_data[i].user.screen_name + '\n' +
+    					tweets_raw_data[i].text;
+    			console.log(tweet_Display);
+    			logAction(tweet_Display);
     		}
   		}
 	});
@@ -65,13 +75,15 @@ function fetchSpotify (song) {
 					break;
 			}
 
-			console.log('Result ' + (i+1) + ':');
-			console.log('===============================================');
-			console.log('Song: ' + data.tracks.items[i].name);
-			console.log('Artist Name: ' + data.tracks.items[i].album.artists[0].name);
-			console.log('Preview URL: ' + data.tracks.items[i].preview_url);
-			console.log('Album: ' + data.tracks.items[i].album.name);
-			console.log('===============================================');
+			var spotify_Display = 'Result ' + (i+1) + '\n' +
+							'===============================================' + '\n' +
+							'Song: ' + data.tracks.items[i].name + '\n' +
+							'Artist Name: ' + data.tracks.items[i].album.artists[0].name + '\n' +
+							'Preview URL: ' + data.tracks.items[i].preview_url + '\n' +
+							'Album: ' + data.tracks.items[i].album.name + '\n' +
+							'===============================================\n';
+			console.log(spotify_Display);
+			logAction(spotify_Display);
 		}
 
 	});
@@ -80,19 +92,18 @@ function fetchSpotify (song) {
 //function to movie-this
 function fetchOMDB (movie) {
 	var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=40e9cece";
-	console.log(queryUrl);
   	request.get(queryUrl, function(err, response) {
 		var movieInfo = JSON.parse(response.body);
-
-  		console.log('*Title: ' + movieInfo.Title);
-  		console.log('*Release: ' + movieInfo.Year);
-  		console.log('*IMDB Rating: ' + movieInfo.imdbRating);
-  		console.log('*Country: ' + movieInfo.Country);
-  		console.log('*Language: ' + movieInfo.Language);
-  		console.log('*Plot: ' + movieInfo.Plot);
-  		console.log('*Actors: ' + movieInfo.Actors);
-  		//need something for rotten tomatoes rating specifically
-  		console.log('*Rotten Tomatoes: ' + movieInfo.Ratings[0].Value);
+		var omdb_Display = '*Title: ' + movieInfo.Title + '\n' +
+							'*Release: ' + movieInfo.Year + '\n' +
+							'*IMDB Rating: ' + movieInfo.imdbRating + '\n' +
+							'*Country: ' + movieInfo.Country + '\n' +
+							'*Language: ' + movieInfo.Language + '\n' +
+							'*Plot: ' + movieInfo.Plot + '\n' +
+							'*Actors: ' + movieInfo.Actors + '\n' +
+							'*Website: ' + movieInfo.Website + '\n';
+  		console.log(omdb_Display);
+  		logAction(omdb_Display);
   	});
 }
 
@@ -121,24 +132,45 @@ function selectingOption(choice, extra) {
 		case 'my-tweets':
 			console.log('Fetching tweets for test Twitter Account');	
 			//US Senator used as an example case
+			logAction('\n Fetching tweets for @CoryBooker \n');
 			fetchTweets('CoryBooker');
 			break;
 		case 'spotify-this-song':
-			console.log('Spotifying for ' + extra);
-			fetchSpotify(extra);
+			if(extra == ''){
+				console.log('Spotifying for The Sign');
+				logAction('\n Spotifying - The Sign \n');
+				fetchSpotify('The Sign');
+			} else {
+				console.log('Spotifying for ' + extra);
+				logAction('\n SPOTIFYING - ' + extra + '\n');
+				fetchSpotify(extra);				
+			}
 			break;
 		case 'movie-this':
-			console.log('Searching OMDB for ' + extra);
-			fetchOMDB(extra);
+			if(extra == '') {
+				console.log('Searching OMDB for Mr. Nobody');
+				logAction('\n OMDB-ing - Mr. Nobody \n');
+				fetchOMDB('Mr. Nobody');
+			} else {
+				console.log('Searching OMDB for ' + extra);
+				logAction('\n OMDB-ing - ' + extra + '\n');
+				fetchOMDB(extra);	
+			}
 			break;
 		case 'do-what-it-says':
 			console.log('Doing what it says');
+			logAction('\n Doing What It Says \n');
 			doWhatItSays();
 			break;
 		case 'find-tweets':
 			//use twitter handle without @
-			console.log('Fetching tweets for ' + extra);
-			fetchTweets(extra);
+			if (extra == '') {
+				console.log('No twitter handle entered.');
+			} else {
+				console.log('\n Fetching tweets for ' + extra + '\n');
+				logAction('\n Fetching Tweets for @' + extra + '\n');
+				fetchTweets(extra);
+			}
 			break;
 		default:
 			console.log('Please select a valid option');
